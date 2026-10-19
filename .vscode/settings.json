@@ -1,0 +1,35 @@
+
+{
+    "files.exclude": {
+        "**/*.meta": true
+        , "**/*.asset": true
+        , "**/*.gitignore": true
+        , "**/*.unity": true
+        , "**/*.prefab": true
+        , "**/*.scenetemplate": true
+        , "**/*.png": true
+        , "**/*.txt": true
+        , "**/*.ttf": true
+        , "**/*.mat": true
+        , "**/*.dll": true
+        , "**/*.mdb": true
+        , "**/*.xml": true
+        , "**/*.XML": true
+    },
+    "search.exclude": {
+        "**/*.meta": true
+        , "**/*.asset": true
+        , "**/*.gitignore": true
+        , "**/*.unity": true
+        , "**/*.prefab": true
+        , "**/*.scenetemplate": true
+        , "**/*.png": true
+        , "**/*.txt": true
+        , "**/*.ttf": true
+        , "**/*.mat": true
+        , "**/*.dll": true
+        , "**/*.mdb": true
+        , "**/*.xml": true
+        , "**/*.XML": true
+    }
+}

@@ -1,0 +1,3 @@
+[submodule "TextWritingSystem"]
+	path = TextWritingSystem
+	url = https://github.com/TVWORTV/TextWritingSystem.git
