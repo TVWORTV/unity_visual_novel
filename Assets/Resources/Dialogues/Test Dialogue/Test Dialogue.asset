@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1907bb7b4699c434eabc83d43830a393, type: 3}
+  m_Name: Test Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::FullTextAsset
+  entry:
+    rid: 8345632378685489163
+  parts:
+  - rid: 8345632378685489163
+  - rid: 8345632378685489164
+  - rid: 8345632378685489166
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 8345632378685489163
+      type: {class: EntryPart, ns: , asm: Assembly-CSharp}
+      data:
+        graphPosition: {x: -143.33333, y: 80}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        next:
+          rid: 8345632378685489164
+    - rid: 8345632378685489164
+      type: {class: ConditionTable, ns: , asm: Assembly-CSharp}
+      data:
+        graphPosition: {x: 550.6667, y: 80}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        entries:
+        - conditions: []
+          priority: 0
+          leadsTo:
+            rid: 8345632378685489166
+    - rid: 8345632378685489166
+      type: {class: SimpleText, ns: , asm: Assembly-CSharp}
+      data:
+        graphPosition: {x: 1094.6666, y: 115.33334}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        line: 
+        next:
+          rid: -2

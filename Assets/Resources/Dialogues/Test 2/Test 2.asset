@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1907bb7b4699c434eabc83d43830a393, type: 3}
+  m_Name: Test 2
+  m_EditorClassIdentifier: Assembly-CSharp::FullTextAsset
+  entry:
+    rid: 8345632378685489167
+  parts:
+  - rid: 8345632378685489167
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 8345632378685489167
+      type: {class: EntryPart, ns: , asm: Assembly-CSharp}
+      data:
+        graphPosition: {x: 80, y: 80}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        next:
+          rid: -2

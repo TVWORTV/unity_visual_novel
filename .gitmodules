@@ -1,3 +1,6 @@
 [submodule "TextWritingSystem"]
-	path = TextWritingSystem
+	path = Assets/TextWritingSystem
 	url = https://github.com/TVWORTV/TextWritingSystem.git
+[submodule "Assets/TextFlagSystem"]
+	path = Assets/TextFlagSystem
+	url = https://github.com/TVWORTV/Unity-Dialogue-Building-Utilities.git
