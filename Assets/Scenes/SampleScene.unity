@@ -284,6 +284,7 @@ GameObject:
   - component: {fileID: 555742323}
   - component: {fileID: 555742325}
   - component: {fileID: 555742324}
+  - component: {fileID: 555742326}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -410,6 +411,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 555742322}
   m_CullTransparentMesh: 1
+--- !u!114 &555742326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 555742322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b1faa4050b075d4cb33f90ec123921e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TextManager
+  text: {fileID: 555742324}
+  uiCamera: {fileID: 519420031}
+  useUnscaledTime: 0
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -566,10 +582,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
-  m_ReferencePixelsPerUnit: 100
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 32
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 960, y: 540}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -586,8 +602,8 @@ Canvas:
   m_GameObject: {fileID: 625038975}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -631,7 +647,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1643106639}
   - component: {fileID: 1643106638}
-  - component: {fileID: 1643106640}
   m_Layer: 0
   m_Name: test
   m_TagString: Untagged
@@ -651,7 +666,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22d394e582d5c9340b8fa6d1ee5025ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TextManagerTester
-  manager: {fileID: 1643106640}
+  manager: {fileID: 555742326}
   target: {fileID: 555742324}
   style: {fileID: 11400000, guid: 3c402c84f57904649a1d92f135aca530, type: 2}
   message: Hello there. This is a <link="test">clickable link</link>! Does it work?
@@ -670,21 +685,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1643106640
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1643106637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b1faa4050b075d4cb33f90ec123921e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TextManager
-  text: {fileID: 555742324}
-  uiCamera: {fileID: 519420031}
-  useUnscaledTime: 0
 --- !u!1 &2040941964
 GameObject:
   m_ObjectHideFlags: 0

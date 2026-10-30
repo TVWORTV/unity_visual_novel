@@ -10,7 +10,12 @@ public class TextManagerTester : MonoBehaviour
 
     void OnEnable()
     {
-        if (manager == null) return;
+        if (manager == null)
+        {
+            Debug.LogWarning("TextManagerTester has no TextManager assigned");
+            return;
+        }
+
         manager.onLinkClicked += LogClick;
         manager.onLinkHoverEnter += LogEnter;
         manager.onLinkHoverExit += LogExit;

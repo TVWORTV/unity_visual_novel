@@ -17,6 +17,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     void Awake()
     {
+        if (textManager == null) textManager = FindFirstObjectByType<TextManager>();
         HideButtons();
     }
 
@@ -56,7 +57,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     void EnterPart(TextPart part)
     {
-        currentPart?.onExit?.Invoke();
+        currentPart?.OnExit();
         currentPart = part;
         HideButtons();
 
@@ -66,7 +67,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        part.onEnter?.Invoke();
+        part.OnEnter();
 
         switch (part)
         {
@@ -79,7 +80,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
                 break;
 
             case EntryPart entry:
-                EnterPart(entry.next);
+                EnterPart(entry.GetNext());
                 break;
 
             default:
@@ -161,6 +162,8 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
         int index = 0;
         foreach (ConditionEntry entry in part.entries)
         {
+            if (!entry.True()) continue;
+
             if (index >= buttons.Count)
             {
                 Debug.LogWarning("not enough option buttons for this condition table");
@@ -210,7 +213,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
         if (!finishedWriting)
         {
-            textManager.Skip();
+            if (textManager != null) textManager.Skip();
             return;
         }
 
@@ -221,11 +224,7 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
     {
         if (eventData.button != PointerEventData.InputButton.Left) return;
 
-        if (dialogueText != null)
-        {
-            int link = TMP_TextUtilities.FindIntersectingLink(dialogueText, eventData.position, eventData.pressEventCamera);
-            if (link != -1) return;
-        }
+        if (textManager != null && textManager.IsOverLink(eventData)) return;
 
         OnTextClick();
     }

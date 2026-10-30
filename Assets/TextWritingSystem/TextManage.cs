@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class TextManager : MonoBehaviour, IPointerClickHandler, IPointerMoveHandler, IPointerExitHandler
+public class TextManager : MonoBehaviour
 {
     public Action onWritingStart, onWritingEnd;
     public Action onEraseStart, onEraseEnd;
@@ -23,8 +23,14 @@ public class TextManager : MonoBehaviour, IPointerClickHandler, IPointerMoveHand
     bool skipRequested;
     readonly TextRenderState renderState = new TextRenderState();
 
+    void Awake()
+    {
+        if (text != null) EnsureRelay(text);
+    }
+
 #region public
 
+    public TMP_Text BoundText => text;
     public bool IsBusy => current != null;
     public string TargetMessage => targetMessage;
 
@@ -81,7 +87,29 @@ public class TextManager : MonoBehaviour, IPointerClickHandler, IPointerMoveHand
 
     void Bind(TMP_Text target)
     {
+        if (text != target) ReleaseHover();
+
         text = target;
+        hoveredLinkIndex = -1;
+        EnsureRelay(target);
+    }
+
+    void EnsureRelay(TMP_Text target)
+    {
+        target.raycastTarget = true;
+
+        TextLinkRelay relay = target.GetComponent<TextLinkRelay>();
+        if (relay == null) relay = target.gameObject.AddComponent<TextLinkRelay>();
+        relay.owner = this;
+    }
+
+    void ReleaseHover()
+    {
+        if (IsValidLink(hoveredLinkIndex))
+        {
+            OnLinkHoverExit(text.textInfo.linkInfo[hoveredLinkIndex].GetLinkID());
+        }
+
         hoveredLinkIndex = -1;
     }
 
@@ -238,22 +266,45 @@ public class TextManager : MonoBehaviour, IPointerClickHandler, IPointerMoveHand
         return text != null && index >= 0 && index < text.textInfo.linkCount;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    Camera ResolveCamera()
     {
-        if (text == null) return;
+        Canvas canvas = text.canvas;
+        if (canvas == null) return uiCamera;
 
-        int index = TMP_TextUtilities.FindIntersectingLink(text, eventData.position, uiCamera);
-        if (index == -1) return;
-
-        TMP_LinkInfo info = text.textInfo.linkInfo[index];
-        HandleLinkClicked(info.GetLinkID());
+        Canvas root = canvas.rootCanvas;
+        if (root.renderMode == RenderMode.ScreenSpaceOverlay) return null;
+        if (root.worldCamera != null) return root.worldCamera;
+        if (uiCamera != null) return uiCamera;
+        return Camera.main;
     }
 
-    public void OnPointerMove(PointerEventData eventData)
+    int FindLink(PointerEventData eventData)
     {
-        if (text == null) return;
+        if (text == null) return -1;
+        return TMP_TextUtilities.FindIntersectingLink(text, eventData.position, ResolveCamera());
+    }
 
-        int index = TMP_TextUtilities.FindIntersectingLink(text, eventData.position, uiCamera);
+    public bool IsOverLink(PointerEventData eventData)
+    {
+        return FindLink(eventData) != -1;
+    }
+
+    public bool HandleClick(TMP_Text source, PointerEventData eventData)
+    {
+        if (source != text) return false;
+
+        int index = FindLink(eventData);
+        if (index == -1) return false;
+
+        HandleLinkClicked(text.textInfo.linkInfo[index].GetLinkID());
+        return true;
+    }
+
+    public void HandleMove(TMP_Text source, PointerEventData eventData)
+    {
+        if (source != text) return;
+
+        int index = FindLink(eventData);
 
         if (index == hoveredLinkIndex) return;
 
@@ -270,16 +321,10 @@ public class TextManager : MonoBehaviour, IPointerClickHandler, IPointerMoveHand
         }
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public void HandleExit(TMP_Text source)
     {
-        if (hoveredLinkIndex == -1) return;
-
-        if (IsValidLink(hoveredLinkIndex))
-        {
-            OnLinkHoverExit(text.textInfo.linkInfo[hoveredLinkIndex].GetLinkID());
-        }
-
-        hoveredLinkIndex = -1;
+        if (source != text) return;
+        ReleaseHover();
     }
 
 #endregion
