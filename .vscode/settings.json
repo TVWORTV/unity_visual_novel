@@ -15,7 +15,6 @@
         , "**/*.mdb": true
         , "**/*.xml": true
         , "**/*.XML": true
-        , "**/*.md": true
     },
     "search.exclude": {
         "**/*.meta": true
@@ -32,6 +31,5 @@
         , "**/*.mdb": true
         , "**/*.xml": true
         , "**/*.XML": true
-        , "**/*.md": true
     }
 }

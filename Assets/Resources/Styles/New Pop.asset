@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43d1d4179642ab344b5f9d6c1e94c0b6, type: 3}
+  m_Name: New Pop
+  m_EditorClassIdentifier: Assembly-CSharp::Pop
+  randomChars: 0
+  elementType: 0
+  delayBetweenElements: 0.05
+  elementDuration: 0.2
+  reverseOnErase: 1
+  explodeAmount: 0.4
+  shrinkAmount: 0.5

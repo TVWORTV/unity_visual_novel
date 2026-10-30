@@ -38,6 +38,12 @@ public class TextManagerTester : MonoBehaviour
     {
         Debug.Log("link hover exit: " + id);
     }
+    
+    [ContextMenu("Do Something")]
+    void DoSomething()
+    {
+        Debug.Log("Perform operation");
+    }
 
     [ContextMenu("Write")]
     public void Write()
