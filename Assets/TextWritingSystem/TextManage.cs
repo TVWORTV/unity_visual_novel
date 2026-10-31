@@ -81,6 +81,15 @@ public class TextManager : MonoBehaviour
         if (current != null) skipRequested = true;
     }
 
+    public void Stop()
+    {
+        if (current == null) return;
+
+        StopCoroutine(current);
+        current = null;
+        skipRequested = false;
+    }
+
 #endregion
 
 #region private
@@ -151,17 +160,18 @@ public class TextManager : MonoBehaviour
         float delay = Mathf.Max(style.delayBetweenElements, 0f);
         float total = elements.Count == 0 ? 0f : (elements.Count - 1) * delay + duration;
         float elapsed = 0f;
+        bool[] started = new bool[elements.Count];
 
         while (elapsed < total && !skipRequested)
         {
-            ApplyFrame(elements, style, erasing, delay, duration, elapsed);
+            ApplyFrame(elements, started, style, erasing, delay, duration, elapsed, true);
             renderState.Flush();
 
             yield return null;
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
         }
 
-        ApplyFrame(elements, style, erasing, delay, duration, float.MaxValue);
+        ApplyFrame(elements, started, style, erasing, delay, duration, float.MaxValue, !skipRequested);
         renderState.Flush();
 
         if (erasing)
@@ -176,12 +186,19 @@ public class TextManager : MonoBehaviour
         RaiseEnd(erasing);
     }
 
-    void ApplyFrame(List<TextElement> elements, WritingStyle style, bool erasing, float delay, float duration, float elapsed)
+    void ApplyFrame(List<TextElement> elements, bool[] started, WritingStyle style, bool erasing, float delay, float duration, float elapsed, bool playSounds)
     {
         for (int i = 0; i < elements.Count; i++)
         {
             float local = elapsed - i * delay;
             float t = local < 0f ? -1f : Mathf.Clamp01(local / duration);
+
+            if (playSounds && !started[i] && local >= 0f)
+            {
+                started[i] = true;
+                style.OnElementStart(elements[i], i, erasing);
+            }
+
             style.Apply(renderState, elements[i], t, erasing);
         }
     }

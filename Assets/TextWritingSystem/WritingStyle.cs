@@ -29,4 +29,14 @@ public abstract class WritingStyle : ScriptableObject
     public bool reverseOnErase = true;
 
     public abstract void Apply(TextRenderState state, TextElement element, float t, bool erasing);
+
+    public virtual void OnElementStart(TextElement element, int index, bool erasing)
+    {
+    }
+
+    protected void PlaySound(AudioClip clip)
+    {
+        if (clip == null || SFXManager.Instance == null) return;
+        SFXManager.Instance.Play(clip);
+    }
 }

@@ -8,6 +8,10 @@ using UnityEngine.UI;
 public class DialogueManager : MonoBehaviour, IPointerClickHandler
 {
     public Action onDialogueStart, onDialogueEnd;
+    public Action<TextPart> onPartEnter, onPartExit;
+    public Action<string> onLineFinished;
+    public Action<IReadOnlyList<ConditionEntry>> onOptionsShown;
+    public Action<ConditionEntry> onOptionChosen;
 
     public TextManager textManager;
     public WritingStyle writingStyle;
@@ -15,9 +19,14 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
     public TMP_Text nameText;
     public string defaultSpeaker = "";
 
+    bool ignoreWritingEnd;
+    bool warnedInstant;
+    string currentLine = string.Empty;
+
     void Awake()
     {
         if (textManager == null) textManager = FindFirstObjectByType<TextManager>();
+        if (dialogueText == null && textManager != null) dialogueText = textManager.BoundText;
         HideButtons();
     }
 
@@ -39,9 +48,17 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
             return;
         }
 
+        if (isRunning) StopDialogue();
+
         currentAsset = textAsset;
         onDialogueStart?.Invoke();
         EnterPart(textAsset.entry);
+    }
+
+    public void StopDialogue()
+    {
+        if (!isRunning) return;
+        EnterPart(null);
     }
 
 #region current 
@@ -57,7 +74,13 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     void EnterPart(TextPart part)
     {
-        currentPart?.OnExit();
+        if (currentPart != null)
+        {
+            TextPart leaving = currentPart;
+            leaving.OnExit();
+            onPartExit?.Invoke(leaving);
+        }
+
         currentPart = part;
         HideButtons();
 
@@ -68,6 +91,10 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
         }
 
         part.OnEnter();
+        if (currentPart != part) return;
+
+        onPartEnter?.Invoke(part);
+        if (currentPart != part) return;
 
         switch (part)
         {
@@ -92,13 +119,15 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     void Advance()
     {
-        if (currentPart is SimpleText simple) EnterPart(simple.next);
+        if (currentPart is SimpleText simple) EnterPart(simple.GetNext());
     }
 
     void FinishDialogue()
     {
+        StopWriting();
         currentAsset = null;
         finishedWriting = false;
+        currentLine = string.Empty;
         if (dialogueText != null) dialogueText.text = string.Empty;
         SetName(string.Empty);
         onDialogueEnd?.Invoke();
@@ -114,29 +143,60 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
     {
         SetName(GetSpeaker(part));
 
-        string line = part.line;
+        currentLine = part.line ?? string.Empty;
+        finishedWriting = false;
 
-        if (string.IsNullOrWhiteSpace(line))
+        if (string.IsNullOrWhiteSpace(currentLine))
         {
+            StopWriting();
             if (dialogueText != null) dialogueText.text = string.Empty;
-            finishedWriting = true;
+            CompleteLine();
             return;
         }
 
         if (textManager == null || writingStyle == null || dialogueText == null)
         {
-            if (dialogueText != null) dialogueText.text = line;
-            finishedWriting = true;
+            if (!warnedInstant)
+            {
+                warnedInstant = true;
+                Debug.LogWarning("DialogueManager is missing a TextManager, WritingStyle or dialogue text, lines will appear instantly");
+            }
+
+            StopWriting();
+            if (dialogueText != null) dialogueText.text = currentLine;
+            CompleteLine();
             return;
         }
 
-        textManager.Write(line, dialogueText, writingStyle);
-        finishedWriting = false;
+        ignoreWritingEnd = true;
+        try
+        {
+            textManager.Write(currentLine, dialogueText, writingStyle);
+        }
+        finally
+        {
+            ignoreWritingEnd = false;
+        }
+    }
+
+    void CompleteLine()
+    {
+        finishedWriting = true;
+        onLineFinished?.Invoke(currentLine);
+    }
+
+    void StopWriting()
+    {
+        if (textManager == null || !textManager.IsBusy) return;
+        if (textManager.BoundText != dialogueText) return;
+        textManager.Stop();
     }
 
     void OnWritingEnded()
     {
-        finishedWriting = true;
+        if (ignoreWritingEnd || !isRunning || finishedWriting) return;
+        if (textManager.BoundText != dialogueText) return;
+        CompleteLine();
     }
 
     string GetSpeaker(SimpleText part)
@@ -155,16 +215,20 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     public List<Button> buttons = new(); 
 
+    readonly List<ConditionEntry> visibleEntries = new();
+
+    public IReadOnlyList<ConditionEntry> VisibleOptions => visibleEntries;
+
     public void OnConditionTableEnter(ConditionTable part)
     {
         HideButtons();
 
-        int index = 0;
         foreach (ConditionEntry entry in part.entries)
         {
             if (!entry.True()) continue;
 
-            if (index >= buttons.Count)
+            int index = visibleEntries.Count;
+            if (index >= buttons.Count || buttons[index] == null)
             {
                 Debug.LogWarning("not enough option buttons for this condition table");
                 break;
@@ -177,14 +241,32 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
             button.onClick.AddListener(() => OnOptionChosen(chosen));
             SetButtonLabel(button, entry, index);
 
-            index++;
+            visibleEntries.Add(entry);
         }
 
-        if (index == 0) EnterPart(null);
+        if (visibleEntries.Count == 0)
+        {
+            Debug.LogWarning("condition table has no available options, ending dialogue");
+            EnterPart(null);
+            return;
+        }
+
+        onOptionsShown?.Invoke(visibleEntries);
+    }
+
+    public bool ChooseOption(int index)
+    {
+        if (!options || index < 0 || index >= visibleEntries.Count) return false;
+
+        OnOptionChosen(visibleEntries[index]);
+        return true;
     }
 
     void OnOptionChosen(ConditionEntry entry)
     {
+        if (!options) return;
+
+        onOptionChosen?.Invoke(entry);
         EnterPart(entry.leadsTo);
     }
 
@@ -199,6 +281,8 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
     void HideButtons()
     {
+        visibleEntries.Clear();
+
         foreach (Button button in buttons)
         {
             if (button == null) continue;
@@ -213,7 +297,8 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
 
         if (!finishedWriting)
         {
-            if (textManager != null) textManager.Skip();
+            if (textManager != null && textManager.IsBusy) textManager.Skip();
+            else CompleteLine();
             return;
         }
 
@@ -223,7 +308,6 @@ public class DialogueManager : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left) return;
-
         if (textManager != null && textManager.IsOverLink(eventData)) return;
 
         OnTextClick();

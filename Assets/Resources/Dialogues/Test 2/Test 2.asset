@@ -24,6 +24,7 @@ MonoBehaviour:
     - rid: 8345632378685489167
       type: {class: EntryPart, ns: , asm: Assembly-CSharp}
       data:
+        partName: 
         graphPosition: {x: 80, y: 80}
         onEnter:
           m_PersistentCalls:

@@ -6,6 +6,14 @@ public class Pop : WritingStyle
 {
     [Min(0f)] public float explodeAmount = 0.4f;
     [Range(0f, 1f)] public float shrinkAmount = 0.5f;
+    public AudioClip popSound;
+    public bool playOnErase;
+
+    public override void OnElementStart(TextElement element, int index, bool erasing)
+    {
+        if (erasing && !playOnErase) return;
+        PlaySound(popSound);
+    }
 
     public override void Apply(TextRenderState state, TextElement element, float t, bool erasing)
     {
