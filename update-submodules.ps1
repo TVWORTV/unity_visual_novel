@@ -1,4 +1,4 @@
-# .\update-submodules.ps1 "e"
+# .\update-submodules.ps1
 param(
     [string]$Message = "Update submodule"
 )

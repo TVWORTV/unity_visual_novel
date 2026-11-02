@@ -10,26 +10,18 @@ public class EffectLibrary
     public Dictionary<CharacterData, CharacterWritingEffects> effects = new(); 
 }
 
-public class CharacterData
-{
-
-}
-
 [Serializable]
 public class CharacterWritingEffects
 {
-    public CharacterData data;
-    public WritingStyle nameWritingStyle; 
-    public WritingStyle nameErasingStyle; 
-
-    public WritingStyle textWritingStyle; 
-    public WritingStyle textErasingStyle; 
-
-    public WritingStyle optionsWritingStyle; 
-    public WritingStyle optionsErasingStyle; 
+    public Style simpleTextStyle; 
+    public Style linkStyle; 
+    public Style optionsStyle; 
+    public Style nameStyle; 
 }
 
-public class LinkStyle 
+[Serializable]
+public class Style 
 {
-    
+    public WritingStyle writingStyle; 
+    public IdleStyle idleStyle; 
 }
