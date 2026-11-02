@@ -16,14 +16,62 @@ MonoBehaviour:
     rid: 8345632378685489163
   parts:
   - rid: 8345632378685489163
-  - rid: 8345632378685489164
-  - rid: 8345632378685489166
-  - rid: 8345632607236784138
+  - rid: 7710535337458008145
+  - rid: 7710535337458008147
+  - rid: 7710535337458008148
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 7710535337458008145
+      type: {class: OptionsTable, ns: , asm: Assembly-CSharp}
+      data:
+        partName: 
+        graphPosition: {x: 410.66666, y: 80}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        options:
+        - text: 'Option 1 '
+          conditions: []
+          leadsTo:
+            rid: 7710535337458008148
+        - text: Option 2
+          conditions: []
+          leadsTo:
+            rid: 7710535337458008147
+    - rid: 7710535337458008147
+      type: {class: SimpleText, ns: , asm: Assembly-CSharp}
+      data:
+        partName: 
+        graphPosition: {x: 894, y: 306}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        line: 'opt 2 '
+        next:
+          rid: -2
+    - rid: 7710535337458008148
+      type: {class: SimpleText, ns: , asm: Assembly-CSharp}
+      data:
+        partName: 
+        graphPosition: {x: 894, y: -82.666664}
+        onEnter:
+          m_PersistentCalls:
+            m_Calls: []
+        onExit:
+          m_PersistentCalls:
+            m_Calls: []
+        line: opt 1
+        next:
+          rid: -2
     - rid: 8345632378685489163
       type: {class: EntryPart, ns: , asm: Assembly-CSharp}
       data:
@@ -36,52 +84,4 @@ MonoBehaviour:
           m_PersistentCalls:
             m_Calls: []
         next:
-          rid: 8345632378685489164
-    - rid: 8345632378685489164
-      type: {class: ConditionTable, ns: , asm: Assembly-CSharp}
-      data:
-        partName: condition
-        graphPosition: {x: 426, y: 80}
-        onEnter:
-          m_PersistentCalls:
-            m_Calls: []
-        onExit:
-          m_PersistentCalls:
-            m_Calls: []
-        entries:
-        - conditions: []
-          priority: 0
-          leadsTo:
-            rid: 8345632378685489166
-        - conditions: []
-          priority: 0
-          leadsTo:
-            rid: 8345632607236784138
-    - rid: 8345632378685489166
-      type: {class: SimpleText, ns: , asm: Assembly-CSharp}
-      data:
-        partName: 
-        graphPosition: {x: 1028.6666, y: 142}
-        onEnter:
-          m_PersistentCalls:
-            m_Calls: []
-        onExit:
-          m_PersistentCalls:
-            m_Calls: []
-        line: Text
-        next:
-          rid: -2
-    - rid: 8345632607236784138
-      type: {class: SimpleText, ns: , asm: Assembly-CSharp}
-      data:
-        partName: 
-        graphPosition: {x: 1028.6666, y: 500.66666}
-        onEnter:
-          m_PersistentCalls:
-            m_Calls: []
-        onExit:
-          m_PersistentCalls:
-            m_Calls: []
-        line: a
-        next:
-          rid: -2
+          rid: 7710535337458008145

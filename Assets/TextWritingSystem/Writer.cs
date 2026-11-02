@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class TextManager : MonoBehaviour
+public class Writer : MonoBehaviour
 {
     public Action onWritingStart, onWritingEnd;
     public Action onEraseStart, onEraseEnd;
@@ -19,22 +18,18 @@ public class TextManager : MonoBehaviour
     WritingStyle lastStyle = null;
     int hoveredLinkIndex = -1;
     Coroutine current;
+    Coroutine idleRoutine;
     bool currentErasing;
     bool skipRequested;
     readonly TextRenderState renderState = new TextRenderState();
 
-    void Awake()
-    {
-        if (text != null) EnsureRelay(text);
-    }
-
 #region public
 
-    public TMP_Text BoundText => text;
     public bool IsBusy => current != null;
+    public bool IsIdling => idleRoutine != null;
     public string TargetMessage => targetMessage;
 
-    public void Write(string message, TMP_Text writeOn, WritingStyle style)
+    public void Write(string message, TMP_Text writeOn, WritingStyle style, IdleStyle idle = null)
     {
         if (writeOn == null || style == null)
         {
@@ -51,7 +46,9 @@ public class TextManager : MonoBehaviour
         writeOn.text = message;
         writeOn.ForceMeshUpdate(true, true);
 
-        current = StartCoroutine(Run(writeOn, style, false));
+        if (idle == null) idle = style as IdleStyle;
+
+        current = StartCoroutine(Run(writeOn, style, false, idle));
     }
 
     public void Erase(TMP_Text eraseOn, WritingStyle style = null)
@@ -73,21 +70,41 @@ public class TextManager : MonoBehaviour
         Bind(eraseOn);
         eraseOn.ForceMeshUpdate(true, true);
 
-        current = StartCoroutine(Run(eraseOn, toUse, true));
+        current = StartCoroutine(Run(eraseOn, toUse, true, null));
+    }
+
+    public void Idle(TMP_Text target, IdleStyle style)
+    {
+        if (target == null || style == null)
+        {
+            Debug.LogError("idle needs a text and a style");
+            return;
+        }
+
+        if (current != null)
+        {
+            Debug.LogWarning("cannot idle while writing or erasing");
+            return;
+        }
+
+        StopIdle();
+        Bind(target);
+        StartIdle(target, style);
+    }
+
+    public void StopIdle()
+    {
+        if (idleRoutine == null) return;
+
+        StopCoroutine(idleRoutine);
+        idleRoutine = null;
+
+        if (text != null) text.ForceMeshUpdate(true, true);
     }
 
     public void Skip()
     {
         if (current != null) skipRequested = true;
-    }
-
-    public void Stop()
-    {
-        if (current == null) return;
-
-        StopCoroutine(current);
-        current = null;
-        skipRequested = false;
     }
 
 #endregion
@@ -96,34 +113,14 @@ public class TextManager : MonoBehaviour
 
     void Bind(TMP_Text target)
     {
-        if (text != target) ReleaseHover();
-
         text = target;
-        hoveredLinkIndex = -1;
-        EnsureRelay(target);
-    }
-
-    void EnsureRelay(TMP_Text target)
-    {
-        target.raycastTarget = true;
-
-        TextLinkRelay relay = target.GetComponent<TextLinkRelay>();
-        if (relay == null) relay = target.gameObject.AddComponent<TextLinkRelay>();
-        relay.owner = this;
-    }
-
-    void ReleaseHover()
-    {
-        if (IsValidLink(hoveredLinkIndex))
-        {
-            OnLinkHoverExit(text.textInfo.linkInfo[hoveredLinkIndex].GetLinkID());
-        }
-
         hoveredLinkIndex = -1;
     }
 
     void CancelCurrent()
     {
+        StopIdle();
+
         if (current == null) return;
 
         StopCoroutine(current);
@@ -144,7 +141,37 @@ public class TextManager : MonoBehaviour
         else onWritingEnd?.Invoke();
     }
 
-    IEnumerator Run(TMP_Text target, WritingStyle style, bool erasing)
+    void StartIdle(TMP_Text target, IdleStyle style)
+    {
+        target.ForceMeshUpdate(true, true);
+        idleRoutine = StartCoroutine(RunIdle(target, style));
+    }
+
+    IEnumerator RunIdle(TMP_Text target, IdleStyle style)
+    {
+        renderState.Capture(target);
+
+        List<TextElement> elements = BuildElements(target.textInfo, style.elementType);
+        if (style.randomChars) Shuffle(elements);
+
+        float delay = Mathf.Max(style.delayBetweenElements, 0f);
+        float elapsed = 0f;
+
+        while (true)
+        {
+            for (int i = 0; i < elements.Count; i++)
+            {
+                style.ApplyIdle(renderState, elements[i], Mathf.Max(elapsed - i * delay, 0f));
+            }
+
+            renderState.Flush();
+
+            yield return null;
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        }
+    }
+
+    IEnumerator Run(TMP_Text target, WritingStyle style, bool erasing, IdleStyle idle)
     {
         currentErasing = erasing;
         skipRequested = false;
@@ -160,18 +187,17 @@ public class TextManager : MonoBehaviour
         float delay = Mathf.Max(style.delayBetweenElements, 0f);
         float total = elements.Count == 0 ? 0f : (elements.Count - 1) * delay + duration;
         float elapsed = 0f;
-        bool[] started = new bool[elements.Count];
 
         while (elapsed < total && !skipRequested)
         {
-            ApplyFrame(elements, started, style, erasing, delay, duration, elapsed, true);
+            ApplyFrame(elements, style, erasing, delay, duration, elapsed);
             renderState.Flush();
 
             yield return null;
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
         }
 
-        ApplyFrame(elements, started, style, erasing, delay, duration, float.MaxValue, !skipRequested);
+        ApplyFrame(elements, style, erasing, delay, duration, float.MaxValue);
         renderState.Flush();
 
         if (erasing)
@@ -183,22 +209,18 @@ public class TextManager : MonoBehaviour
 
         current = null;
         skipRequested = false;
+
+        if (!erasing && idle != null) StartIdle(target, idle);
+
         RaiseEnd(erasing);
     }
 
-    void ApplyFrame(List<TextElement> elements, bool[] started, WritingStyle style, bool erasing, float delay, float duration, float elapsed, bool playSounds)
+    void ApplyFrame(List<TextElement> elements, WritingStyle style, bool erasing, float delay, float duration, float elapsed)
     {
         for (int i = 0; i < elements.Count; i++)
         {
             float local = elapsed - i * delay;
             float t = local < 0f ? -1f : Mathf.Clamp01(local / duration);
-
-            if (playSounds && !started[i] && local >= 0f)
-            {
-                started[i] = true;
-                style.OnElementStart(elements[i], i, erasing);
-            }
-
             style.Apply(renderState, elements[i], t, erasing);
         }
     }
@@ -272,95 +294,6 @@ public class TextManager : MonoBehaviour
             int j = UnityEngine.Random.Range(0, i + 1);
             (elements[i], elements[j]) = (elements[j], elements[i]);
         }
-    }
-
-#endregion
-
-#region Pointer 
-
-    bool IsValidLink(int index)
-    {
-        return text != null && index >= 0 && index < text.textInfo.linkCount;
-    }
-
-    Camera ResolveCamera()
-    {
-        Canvas canvas = text.canvas;
-        if (canvas == null) return uiCamera;
-
-        Canvas root = canvas.rootCanvas;
-        if (root.renderMode == RenderMode.ScreenSpaceOverlay) return null;
-        if (root.worldCamera != null) return root.worldCamera;
-        if (uiCamera != null) return uiCamera;
-        return Camera.main;
-    }
-
-    int FindLink(PointerEventData eventData)
-    {
-        if (text == null) return -1;
-        return TMP_TextUtilities.FindIntersectingLink(text, eventData.position, ResolveCamera());
-    }
-
-    public bool IsOverLink(PointerEventData eventData)
-    {
-        return FindLink(eventData) != -1;
-    }
-
-    public bool HandleClick(TMP_Text source, PointerEventData eventData)
-    {
-        if (source != text) return false;
-
-        int index = FindLink(eventData);
-        if (index == -1) return false;
-
-        HandleLinkClicked(text.textInfo.linkInfo[index].GetLinkID());
-        return true;
-    }
-
-    public void HandleMove(TMP_Text source, PointerEventData eventData)
-    {
-        if (source != text) return;
-
-        int index = FindLink(eventData);
-
-        if (index == hoveredLinkIndex) return;
-
-        if (IsValidLink(hoveredLinkIndex))
-        {
-            OnLinkHoverExit(text.textInfo.linkInfo[hoveredLinkIndex].GetLinkID());
-        }
-
-        hoveredLinkIndex = index;
-
-        if (IsValidLink(hoveredLinkIndex))
-        {
-            OnLinkHoverEnter(text.textInfo.linkInfo[hoveredLinkIndex].GetLinkID());
-        }
-    }
-
-    public void HandleExit(TMP_Text source)
-    {
-        if (source != text) return;
-        ReleaseHover();
-    }
-
-#endregion
-
-#region Links 
-
-    void HandleLinkClicked(string linkId)
-    {
-        onLinkClicked?.Invoke(linkId);
-    }
-
-    void OnLinkHoverEnter(string linkId)
-    {
-        onLinkHoverEnter?.Invoke(linkId);
-    }
-
-    void OnLinkHoverExit(string linkId)
-    {
-        onLinkHoverExit?.Invoke(linkId);
     }
 
 #endregion

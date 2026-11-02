@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(TMP_Text))]
 public class TextLinkRelay : MonoBehaviour, IPointerClickHandler, IPointerMoveHandler, IPointerExitHandler
 {
-    [HideInInspector] public TextManager owner;
+    [HideInInspector] public Writer owner;
 
     TMP_Text text;
 

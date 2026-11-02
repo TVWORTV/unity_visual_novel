@@ -33,10 +33,4 @@ public abstract class WritingStyle : ScriptableObject
     public virtual void OnElementStart(TextElement element, int index, bool erasing)
     {
     }
-
-    protected void PlaySound(AudioClip clip)
-    {
-        if (clip == null || SFXManager.Instance == null) return;
-        SFXManager.Instance.Play(clip);
-    }
 }

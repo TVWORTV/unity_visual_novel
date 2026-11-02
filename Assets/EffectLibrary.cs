@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 public class EffectLibrary 
 {
-    public Dictionary<CharacterData, CharacterEffectCombo> effects = new(); 
+    public Dictionary<CharacterData, CharacterWritingEffects> effects = new(); 
 }
 
 public class CharacterData
@@ -16,7 +16,7 @@ public class CharacterData
 }
 
 [Serializable]
-public class CharacterEffectCombo
+public class CharacterWritingEffects
 {
     public CharacterData data;
     public WritingStyle nameWritingStyle; 
@@ -27,4 +27,9 @@ public class CharacterEffectCombo
 
     public WritingStyle optionsWritingStyle; 
     public WritingStyle optionsErasingStyle; 
+}
+
+public class LinkStyle 
+{
+    
 }
