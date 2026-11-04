@@ -1,4 +1,4 @@
-
+using UnityEngine; 
 
 [CreateAssetMenu(menuName = "Characters")]
 public class CharacterData : ScriptableObject, Speaker
