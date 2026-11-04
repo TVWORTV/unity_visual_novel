@@ -1,4 +1,3 @@
-```powershell
 # .\update-submodules.ps1
 
 param(
@@ -163,4 +162,3 @@ if ($diffExit -eq 1) {
 
 git push
 exit $LASTEXITCODE
-```
